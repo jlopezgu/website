@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  website:
+    image: website
+    restart: always
+    ports:
+      - 8000:8000
+    links:
+      - mysqldb
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    environment:
+      DJANGO_SUPERUSER_PASSWORD: 'password'
+      DJANGO_SUPERUSER_EMAIL: 'admin@admin.com'
+      DJANGO_SUPERUSER_USERNAME: 'admin'
+
+  mysqldb:
+    image: mysql
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql:/var/lib/mysql
+      - mysql_config:/etc/mysql
+    environment:
+      MYSQL_DATABASE: 'djangoDB'
+      MYSQL_ROOT_PASSWORD: 'passwd'
+      MYSQL_USER: 'mysqluser'
+      MYSQL_PASSWORD: 'mysqlpasswd'
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+
+volumes:
+  mysql:
+  mysql_config:
